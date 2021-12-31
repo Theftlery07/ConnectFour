@@ -12,11 +12,15 @@
         <input type="checkbox" id="drawing">
         <button onclick="go()">Turn</button>
         <button onclick="timer()">Timer</button>
-        <table onmouseover="bigger()" onmouseout="smaller()" style="width: 20px;height: 20px;"></table>
+        <table onclick="locker()" onmouseover="bigger()" onmouseout="smaller()" style="width: 20px;height: 20px;"></table>
         <p id="red">Red: 0</p>
         <p id="black">Black: 0 0%</p>
         <p id="tie">Tie: 0 0%</p>
-        <table id="table" style="display: none;position: absolute;"></table>
+        <span style="display: none;position: absolute;">
+            <table id="table" style="display: grid;"></table>
+            <canvas style="border: solid black 1px;"></canvas>
+        </span>
+        
         <br>
         <span id="area"></span>
     </body>
