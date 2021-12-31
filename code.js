@@ -8,6 +8,8 @@ var winRate = [[0,0,0],[null,null,null]];
 var quicker;
 var turnWin = [];
 var table;
+var largest = 0;
+var locked = false;
 
 function startUp(){
     placement = document.getElementById("area");
@@ -26,21 +28,48 @@ function startUp(){
     tabler();
 }
 
+function locker(){
+    if(locked == false){
+        locked = true;
+    }
+    else{
+        locked = false;
+    }
+}
+
 function tabler(){
     for(var i=0;i<table.children.length;i++){
         table.children[i].innerHTML = i+1+": "+turnWin[i];
+        if(turnWin[i]>largest){
+            largest = turnWin[i];
+        }
+    }
+}
+
+function charting(){
+    var holder = table.nextElementSibling.getContext("2d");
+    holder.fillStyle = "blanchedalmond";
+    holder.fillRect(0,0,table.nextElementSibling.clientHeight+10,table.nextElementSibling.clientWidth+10)
+    holder.fillStyle = "#00FF00";
+    console.log(table.nextElementSibling.clientHeight);
+    for(var i=0;i<table.children.length;i++){
+        holder.fillRect(0,(i*(((470-(21*2)-(2*10))/2.85)/21))+5,(turnWin[i]/largest)*table.nextElementSibling.clientWidth,4);
     }
 }
 
 function bigger(){
-    table.style.display = "grid";
+    table.parentElement.style.display = "flex";
+    charting()
 }
 function smaller(){
-    table.style.display = "none";
+    if(locked == false){
+        table.parentElement.style.display = "none";
+    }
+
 }
 
 function creater(){
-    var holder = document.getElementsByTagName("canvas");
+    var holder = document.getElementsByClassName("games");
     while(holder.length>0){
         placement.removeChild(holder[0]);
     }
@@ -55,10 +84,12 @@ function creater(){
     winRate[1][0].innerHTML = "Red: 0 0%";
     winRate[1][1].innerHTML = "Black: 0 0%";
     winRate[1][2].innerHTML = "Tie: 0 0%";
+    largest = 0;
     for(var i=0;i<turnWin.length;i++){
         turnWin[i]=0;
     }
     tabler();
+    charting();
     for(var i=0;i<amount.value;i++){
         games.length+=1;
         games[games.length-1] = new game([new player(),new player()],size.value,!quicker.checked);
@@ -91,6 +122,7 @@ function go(){
                     winRate[1][1].innerHTML = "Black: "+winRate[0][1]+" "+Math.round(winRate[0][1]*1000/done)/10+"%";
                     turnWin[Math.floor(games[i].turn/2)]+=1;
                     tabler();
+                    charting();
                 }
                 else{
                     winRate[0][2] += 1;
@@ -120,6 +152,7 @@ function game(players,size,drawOn){
         this.canva = document.createElement("canvas");
         this.canva.width = 7*size;
         this.canva.height = 6*size;
+        this.canva.className = "games";
         this.canva.style.border = "solid black 1px";
         placement.appendChild(this.canva);
         this.twod = this.canva.getContext("2d");
