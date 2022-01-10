@@ -21,9 +21,16 @@ function startUp(){
     quicker = document.getElementById("drawing");
     table = document.getElementById("table");
     for(var i=0;i<21;i++){
-        table.appendChild(document.createElement("tr"));
+        var holder = document.createElement("tr");
+        for(var j=0;j<4;j++){
+            holder.appendChild(document.createElement("td"));
+        }
+        table.appendChild(holder);
         turnWin.length+=1;
-        turnWin[turnWin.length-1] = 0;
+        turnWin[turnWin.length-1] = [0,0];
+    }
+    for(var i=0;i<3;i++){
+        table.children[i].style.display = "none";
     }
     tabler();
 }
@@ -39,9 +46,13 @@ function locker(){
 
 function tabler(){
     for(var i=0;i<table.children.length;i++){
-        table.children[i].innerHTML = i+1+": "+turnWin[i];
-        if(turnWin[i]>largest){
-            largest = turnWin[i];
+        for(var j=0;j<2;j++){
+            table.children[i].children[j+2].innerHTML = turnWin[i][j];
+        }
+        table.children[i].children[0].innerHTML = "Turn "+(i+1)+" |";
+        table.children[i].children[1].innerHTML = turnWin[i][0]+turnWin[i][1];
+        if(turnWin[i][0]+turnWin[i][1]>largest){
+            largest = turnWin[i][0]+turnWin[i][1];
         }
     }
 }
@@ -50,10 +61,12 @@ function charting(){
     var holder = table.nextElementSibling.getContext("2d");
     holder.fillStyle = "blanchedalmond";
     holder.fillRect(0,0,table.nextElementSibling.clientHeight+10,table.nextElementSibling.clientWidth+10)
-    holder.fillStyle = "#00FF00";
     console.log(table.nextElementSibling.clientHeight);
     for(var i=0;i<table.children.length;i++){
-        holder.fillRect(0,(i*(((470-(21*2)-(2*10))/2.85)/21))+5,(turnWin[i]/largest)*table.nextElementSibling.clientWidth,4);
+        holder.fillStyle = "#FF0000";
+        holder.fillRect(0,(i*(((470-(21*2)-(2*10))/2.85)/18))-18,(turnWin[i][0]/largest)*table.nextElementSibling.clientWidth,4);
+        holder.fillStyle = "#000000";
+        holder.fillRect((turnWin[i][0]/largest)*table.nextElementSibling.clientWidth,(i*(((470-(21*2)-(2*10))/2.85)/18))-18,(turnWin[i][1]/largest)*table.nextElementSibling.clientWidth,4);
     }
 }
 
@@ -61,6 +74,7 @@ function bigger(){
     table.parentElement.style.display = "flex";
     charting()
 }
+
 function smaller(){
     if(locked == false){
         table.parentElement.style.display = "none";
@@ -86,7 +100,7 @@ function creater(){
     winRate[1][2].innerHTML = "Tie: 0 0%";
     largest = 0;
     for(var i=0;i<turnWin.length;i++){
-        turnWin[i]=0;
+        turnWin[i]=[0,0];
     }
     tabler();
     charting();
@@ -118,20 +132,25 @@ function go(){
                 done+=1;
                 if(games[i].won){
                     winRate[0][(games[i].turn-1)%2] += 1;
-                    winRate[1][0].innerHTML = "Red: "+winRate[0][0]+" "+Math.round(winRate[0][0]*1000/done)/10+"%";
-                    winRate[1][1].innerHTML = "Black: "+winRate[0][1]+" "+Math.round(winRate[0][1]*1000/done)/10+"%";
-                    turnWin[Math.floor(games[i].turn/2)]+=1;
-                    tabler();
-                    charting();
+                    turnWin[Math.floor((games[i].turn-1)/2)][(games[i].turn-1)%2]+=1;
                 }
                 else{
                     winRate[0][2] += 1;
-                    winRate[1][2].innerHTML = "Tie: "+winRate[0][2]+" "+Math.round(winRate[0][2]*1000/done)/10+"%";
                 }
                 games[i] = undefined;
             }
         }
     }
+    if(done!=0){
+        winRate[1][0].innerHTML = "Red: "+winRate[0][0]+" "+Math.round(winRate[0][0]*1000/done)/10+"%";
+        winRate[1][1].innerHTML = "Black: "+winRate[0][1]+" "+Math.round(winRate[0][1]*1000/done)/10+"%";
+        winRate[1][2].innerHTML = "Tie: "+winRate[0][2]+" "+Math.round(winRate[0][2]*1000/done)/10+"%";
+
+        tabler();
+        charting();
+    }
+    
+    
     if(done == games.length){
         games.length = 0;
         console.log("fresh");
@@ -140,6 +159,7 @@ function go(){
             clearInterval(going[0]);
         }
     }
+
     // else{
     //     go();
     // }
@@ -261,19 +281,14 @@ function game(players,size,drawOn){
 }
 
 function player(){
+
     this.decide = function(options){
         var choice;
-        var okay = true;
-        while(okay){
-            okay = true;
-            choice = Math.floor(Math.random()*options.length);
-            for(var i=0;i<options.length;i++){
-                if(choice == options[i]){
-                    okay = false
-                }
-            }
+        while(choice == undefined){
+            choice = options[Math.floor(Math.random()*options.length)];
         }
         return choice;
     }
+
     return this;
 }
